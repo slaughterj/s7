@@ -29,6 +29,8 @@ typedef s7_double s7_Double;
 extern "C" {
 #endif
 
+#include "defs.h"
+
 typedef struct s7_scheme s7_scheme;
 typedef struct s7_cell *s7_pointer;
 
@@ -89,7 +91,7 @@ bool s7_is_provided(s7_scheme *sc, const char *feature);             /* (provide
 
 
 s7_pointer s7_error(s7_scheme *sc, s7_pointer type, s7_pointer info);
-s7_pointer s7_wrong_type_arg_error(s7_scheme *sc, const char *caller, int arg_n, s7_pointer arg, const char *descr);
+EXPORT_LIB s7_pointer s7_wrong_type_arg_error(s7_scheme *sc, const char *caller, int arg_n, s7_pointer arg, const char *descr);
   /* set arg_n to 0 to indicate that caller takes only one argument (so the argument number need not be reported */
 s7_pointer s7_out_of_range_error(s7_scheme *sc, const char *caller, int arg_n, s7_pointer arg, const char *descr);
 s7_pointer s7_wrong_number_of_args_error(s7_scheme *sc, const char *caller, s7_pointer args);
@@ -164,45 +166,45 @@ s7_pointer s7_make_boolean(s7_scheme *sc, bool x);                           /* 
    */
 
 
-bool s7_is_pair(s7_pointer p);                                               /* (pair? p) */
-s7_pointer s7_cons(s7_scheme *sc, s7_pointer a, s7_pointer b);               /* (cons a b) */
+EXPORT_LIB bool s7_is_pair(s7_pointer p);                                               /* (pair? p) */
+EXPORT_LIB s7_pointer s7_cons(s7_scheme *sc, s7_pointer a, s7_pointer b);               /* (cons a b) */
 
-s7_pointer s7_car(s7_pointer p);                                             /* (car p) */
-s7_pointer s7_cdr(s7_pointer p);                                             /* (cdr p) */
+EXPORT_LIB s7_pointer s7_car(s7_pointer p);                                             /* (car p) */
+EXPORT_LIB s7_pointer s7_cdr(s7_pointer p);                                             /* (cdr p) */
 
-s7_pointer s7_set_car(s7_pointer p, s7_pointer q);                           /* (set-car! p q) */
-s7_pointer s7_set_cdr(s7_pointer p, s7_pointer q);                           /* (set-cdr! p q) */
+EXPORT_LIB s7_pointer s7_set_car(s7_pointer p, s7_pointer q);                           /* (set-car! p q) */
+EXPORT_LIB s7_pointer s7_set_cdr(s7_pointer p, s7_pointer q);                           /* (set-cdr! p q) */
 
-s7_pointer s7_cadr(s7_pointer p);                                            /* (cadr p) */
-s7_pointer s7_cddr(s7_pointer p);                                            /* (cddr p) */
-s7_pointer s7_cdar(s7_pointer p);                                            /* (cdar p) */
-s7_pointer s7_caar(s7_pointer p);                                            /* (caar p) */
+EXPORT_LIB s7_pointer s7_cadr(s7_pointer p);                                            /* (cadr p) */
+EXPORT_LIB s7_pointer s7_cddr(s7_pointer p);                                            /* (cddr p) */
+EXPORT_LIB s7_pointer s7_cdar(s7_pointer p);                                            /* (cdar p) */
+EXPORT_LIB s7_pointer s7_caar(s7_pointer p);                                            /* (caar p) */
 
-s7_pointer s7_caadr(s7_pointer p);                                           /* etc */
-s7_pointer s7_caddr(s7_pointer p);
-s7_pointer s7_cadar(s7_pointer p);
-s7_pointer s7_caaar(s7_pointer p);
-s7_pointer s7_cdadr(s7_pointer p);
-s7_pointer s7_cdddr(s7_pointer p);
-s7_pointer s7_cddar(s7_pointer p);
-s7_pointer s7_cdaar(s7_pointer p);
+EXPORT_LIB s7_pointer s7_caadr(s7_pointer p);                                           /* etc */
+EXPORT_LIB s7_pointer s7_caddr(s7_pointer p);
+EXPORT_LIB s7_pointer s7_cadar(s7_pointer p);
+EXPORT_LIB s7_pointer s7_caaar(s7_pointer p);
+EXPORT_LIB s7_pointer s7_cdadr(s7_pointer p);
+EXPORT_LIB s7_pointer s7_cdddr(s7_pointer p);
+EXPORT_LIB s7_pointer s7_cddar(s7_pointer p);
+EXPORT_LIB s7_pointer s7_cdaar(s7_pointer p);
 
-s7_pointer s7_caaadr(s7_pointer p);
-s7_pointer s7_caaddr(s7_pointer p);
-s7_pointer s7_caadar(s7_pointer p);
-s7_pointer s7_caaaar(s7_pointer p);
-s7_pointer s7_cadadr(s7_pointer p);
-s7_pointer s7_cadddr(s7_pointer p);
-s7_pointer s7_caddar(s7_pointer p);
-s7_pointer s7_cadaar(s7_pointer p);
-s7_pointer s7_cdaadr(s7_pointer p);
-s7_pointer s7_cdaddr(s7_pointer p);
-s7_pointer s7_cdadar(s7_pointer p);
-s7_pointer s7_cdaaar(s7_pointer p);
-s7_pointer s7_cddadr(s7_pointer p);
-s7_pointer s7_cddddr(s7_pointer p);
-s7_pointer s7_cdddar(s7_pointer p);
-s7_pointer s7_cddaar(s7_pointer p);
+EXPORT_LIB s7_pointer s7_caaadr(s7_pointer p);
+EXPORT_LIB s7_pointer s7_caaddr(s7_pointer p);
+EXPORT_LIB s7_pointer s7_caadar(s7_pointer p);
+EXPORT_LIB s7_pointer s7_caaaar(s7_pointer p);
+EXPORT_LIB s7_pointer s7_cadadr(s7_pointer p);
+EXPORT_LIB s7_pointer s7_cadddr(s7_pointer p);
+EXPORT_LIB s7_pointer s7_caddar(s7_pointer p);
+EXPORT_LIB s7_pointer s7_cadaar(s7_pointer p);
+EXPORT_LIB s7_pointer s7_cdaadr(s7_pointer p);
+EXPORT_LIB s7_pointer s7_cdaddr(s7_pointer p);
+EXPORT_LIB s7_pointer s7_cdadar(s7_pointer p);
+EXPORT_LIB s7_pointer s7_cdaaar(s7_pointer p);
+EXPORT_LIB s7_pointer s7_cddadr(s7_pointer p);
+EXPORT_LIB s7_pointer s7_cddddr(s7_pointer p);
+EXPORT_LIB s7_pointer s7_cdddar(s7_pointer p);
+EXPORT_LIB s7_pointer s7_cddaar(s7_pointer p);
 
 
 bool s7_is_list(s7_scheme *sc, s7_pointer p);                                /* (list? p) -> (or (pair? p) (null? p)) */
@@ -232,9 +234,9 @@ s7_pointer s7_make_character(s7_scheme *sc, unsigned int c);                 /* 
 
 
 bool s7_is_number(s7_pointer p);                                             /* (number? p) */
-bool s7_is_integer(s7_pointer p);                                            /* (integer? p) */
-s7_int s7_integer(s7_pointer p);                                             /* Scheme integer -> C int (long long int probably) */
-s7_pointer s7_make_integer(s7_scheme *sc, s7_int num);                       /* C long long int -> Scheme integer */
+EXPORT_LIB bool s7_is_integer(s7_pointer p);                                            /* (integer? p) */
+EXPORT_LIB s7_int s7_integer(s7_pointer p);                                             /* Scheme integer -> C int (long long int probably) */
+EXPORT_LIB s7_pointer s7_make_integer(s7_scheme *sc, s7_int num);                       /* C long long int -> Scheme integer */
 
 bool s7_is_real(s7_pointer p);                                               /* (real? p) */
 s7_double s7_real(s7_pointer p);                                             /* Scheme real -> C double */
@@ -469,11 +471,11 @@ s7_pointer s7_make_safe_function(s7_scheme *sc, const char *name, s7_function fn
 s7_pointer s7_make_typed_function(s7_scheme *sc, const char *name, s7_function f, 
 				  int required_args, int optional_args, bool rest_arg, const char *doc, s7_pointer signature);
 
-s7_pointer s7_define_function(s7_scheme *sc, const char *name, s7_function fnc, 
+EXPORT_LIB s7_pointer s7_define_function(s7_scheme *sc, const char *name, s7_function fnc, 
 			      int required_args, int optional_args, bool rest_arg, const char *doc);
-s7_pointer s7_define_safe_function(s7_scheme *sc, const char *name, s7_function fnc, 
+EXPORT_LIB s7_pointer s7_define_safe_function(s7_scheme *sc, const char *name, s7_function fnc, 
 				   int required_args, int optional_args, bool rest_arg, const char *doc);
-s7_pointer s7_define_typed_function(s7_scheme *sc, const char *name, s7_function fnc,
+EXPORT_LIB s7_pointer s7_define_typed_function(s7_scheme *sc, const char *name, s7_function fnc,
 				    int required_args, int optional_args, bool rest_arg, 
 				    const char *doc, s7_pointer signature);
 s7_pointer s7_define_unsafe_typed_function(s7_scheme *sc, const char *name, s7_function fnc,

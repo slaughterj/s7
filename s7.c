@@ -8,7 +8,7 @@
  *   Based on MiniScheme (original credits follow)
  * (MINISCM)               coded by Atsushi Moriwaki (11/5/1989)
  * (MINISCM)           E-MAIL :  moriwaki@kurims.kurims.kyoto-u.ac.jp
- * (MINISCM) This version has been modified by R.C. Secrist.
+ * (MINISCM) This version has been modified by R.C. Secrist. 
  * (MINISCM)
  * (MINISCM) Mini-Scheme is now maintained by Akira KIDA.
  * (MINISCM)
@@ -241,7 +241,11 @@
 #endif
 
 
-#define WITH_GCC (defined(__GNUC__) || defined(__clang__))
+#if (defined(__GNUC__) || defined(__clang__))
+	#define WITH_GCC 1
+#else
+	#define WITH_GCC 0
+#endif
 
 /* in case mus-config.h forgets these */
 #ifdef _MSC_VER
@@ -451,6 +455,7 @@ static int float_format_precision = WRITE_REAL_PRECISION;
 /* T_STACK, T_SLOT, T_BAFFLE, T_DYNAMIC_WIND, and T_COUNTER are internal
  * I tried T_CASE_SELECTOR that turned a case statement into an array, but it was slower!
  */
+
 
 typedef enum {TOKEN_EOF, TOKEN_LEFT_PAREN, TOKEN_RIGHT_PAREN, TOKEN_DOT, TOKEN_ATOM, TOKEN_QUOTE, TOKEN_DOUBLE_QUOTE,
 	      TOKEN_BACK_QUOTE, TOKEN_COMMA, TOKEN_AT_MARK, TOKEN_SHARP_CONST,
@@ -4515,7 +4520,7 @@ static int gc(s7_scheme *sc)
 #if (PRINT_NAME_PADDING == 8)
       fprintf(stdout, "freed %d/%u (free: %d), time: %f\n", sc->gc_freed, sc->heap_size, sc->free_heap_top - sc->free_heap, secs);
 #else
-      fprintf(stdout, "freed %d/%u (free: %ld), time: %f\n", sc->gc_freed, sc->heap_size, sc->free_heap_top - sc->free_heap, secs);
+      fprintf(stdout, "freed %d/%u (free: %lld), time: %f\n", sc->gc_freed, sc->heap_size, sc->free_heap_top - sc->free_heap, secs);
 #endif
 #else
       fprintf(stdout, "freed %d/%u\n", sc->gc_freed, sc->heap_size);
@@ -11171,8 +11176,12 @@ static s7_pointer g_call_with_exit(s7_scheme *sc, s7_pointer args)
   static s7_pointer mpc_to_big_complex(s7_scheme *sc, mpc_t val);
 #endif
 
-#define HAVE_OVERFLOW_CHECKS ((defined(__clang__) && ((__clang_major__ > 3) || (__clang_major__ == 3 && __clang_minor__ >= 4))) || \
+#if ((defined(__clang__) && ((__clang_major__ > 3) || (__clang_major__ == 3 && __clang_minor__ >= 4))) || \
                               (defined(__GNUC__) && __GNUC__ >= 5))
+    #define HAVE_OVERFLOW_CHECKS 1
+#else
+	#define HAVE_OVERFLOW_CHECKS 0
+#endif
 
 #if (defined(__clang__) && ((__clang_major__ > 3) || (__clang_major__ == 3 && __clang_minor__ >= 4))) 
   #define subtract_overflow(A, B, C)     __builtin_ssubll_overflow(A, B, C)
@@ -28566,8 +28575,12 @@ s7_pointer s7_load(s7_scheme *sc, const char *filename)
 
 
 #if WITH_C_LOADER
-#include <dlfcn.h>
-
+#if defined(_WIN32)
+  #define WIN32_LEAN_AND_MEAN
+  #include <windows.h>
+#else
+  #include <dlfcn.h>
+#endif 
 static char *full_filename(const char *filename)
 {
   int len;
@@ -28623,10 +28636,63 @@ defaults to the rootlet.  To load into the current environment instead, pass (cu
   /* if fname ends in .so, try loading it as a c shared object
    *   (load "/home/bil/cl/m_j0.so" (inlet (cons 'init_func 'init_m_j0)))
    */
-  {
+   #if defined(_WIN32)
+  { 
     int fname_len;
 
     fname_len = safe_strlen(fname);
+	
+    if ((fname_len > 4) &&
+	(is_pair(cdr(args))) &&
+	(local_strcmp((const char *)(fname + (fname_len - 4)), ".dll")))
+      {
+	s7_pointer init;
+
+	init = let_ref_1(sc, sc->envir, s7_make_symbol(sc, "init_func"));
+	if (is_symbol(init))
+	  {
+	    void *library;
+	    char *pwd_name = NULL;
+
+//	    if (fname[0] != '/')
+//	      pwd_name = full_filename(fname); /* this is necessary, at least in Linux -- we can't blithely dlopen whatever is passed to us */
+	    library = LoadLibrary(fname);
+	    if (library)
+	      { 
+		const char *init_name = NULL;
+		void* init_func;
+
+		init_name = symbol_name(init);
+		init_func = GetProcAddress(library, init_name);
+		if (init_func)
+		  {//@TODO: Check this. Is this supposed to return void*?
+	  
+		    typedef void* ( *dl_func)(s7_scheme *sc); 
+		    ((dl_func)init_func)(sc);
+			
+		    if (pwd_name) free(pwd_name);
+		    return(sc->T);
+		  }
+		else
+		  {
+		    s7_warn(sc, 512, "loaded %s, but can't find %s (%s)?\n", fname, init_name, GetLastError());
+		    FreeLibrary(library);
+		  }
+	      }
+	    else s7_warn(sc, 512, "load %s failed: %s\n", (pwd_name) ? pwd_name : fname, GetLastError());
+	    if (pwd_name) free(pwd_name);
+	  }
+	else s7_warn(sc, 512, "can't load %s: no init function\n", fname);
+	return(sc->F);
+      }
+  }
+  
+  #else 
+	 {
+    int fname_len;
+
+    fname_len = safe_strlen(fname);
+	
     if ((fname_len > 3) &&
 	(is_pair(cdr(args))) &&
 	(local_strcmp((const char *)(fname + (fname_len - 3)), ".so")))
@@ -28668,7 +28734,8 @@ defaults to the rootlet.  To load into the current environment instead, pass (cu
 	else s7_warn(sc, 512, "can't load %s: no init function\n", fname);
 	return(sc->F);
       }
-  }
+  } 
+  #endif
 #endif
 
   fp = fopen(fname, "r");
@@ -28992,10 +29059,10 @@ The symbols refer to the argument to \"provide\"."
 s7_pointer s7_eval_c_string_with_environment(s7_scheme *sc, const char *str, s7_pointer e)
 {
   s7_pointer code, port;
-  port = s7_open_input_string(sc, str);
-  code = s7_read(sc, port);
-  s7_close_input_port(sc, port);
-  return(s7_eval(sc, _NFre(code), e));
+  port = s7_open_input_string(sc, str); 
+  code = s7_read(sc, port); 
+  s7_close_input_port(sc, port); 
+  return(s7_eval(sc, _NFre(code), e)); 
 }
 
 
@@ -47897,27 +47964,27 @@ s7_pointer s7_eval(s7_scheme *sc, s7_pointer code, s7_pointer e)
   _NFre(code);
 #endif
 
-  store_jump_info(sc);
-  set_jump_info(sc, EVAL_SET_JUMP);
+  store_jump_info(sc); 
+  set_jump_info(sc, EVAL_SET_JUMP); 
   if (jump_loc != NO_JUMP)
-    {
+    { 
       if (jump_loc != ERROR_JUMP)
 	eval(sc, sc->op);
     }
   else 
     {
       push_stack(sc, OP_EVAL_DONE, sc->args, sc->code);
-      sc->code = code;
+      sc->code = code; 
       if ((e != sc->rootlet) &&
 	  (is_let(e)))
 	sc->envir = e;
       else sc->envir = sc->nil; 
       eval(sc, OP_EVAL);
-    }
+    } 
   restore_jump_info(sc);
 
   if (is_multiple_value(sc->value))
-    sc->value = splice_in_values(sc, multiple_value(sc->value));
+    sc->value = splice_in_values(sc, multiple_value(sc->value)); 
   return(sc->value);
 }
 
@@ -75227,7 +75294,8 @@ int main(int argc, char **argv)
     }
   else 
     {
-#ifndef _MSC_VER
+//@ADD #ifndef _MSC_VER
+#ifndef _WIN32
       s7_load(sc, "repl.scm");              /* this is libc dependent */
       s7_eval_c_string(sc, "((*repl* 'run))");
 #else
